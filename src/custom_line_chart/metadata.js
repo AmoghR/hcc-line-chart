@@ -1,10 +1,10 @@
 export const metadata = {
-  name: 'custom_line_chart',
-  id: 'rawgraphs.custom_line_chart',
+  name: 'HCC Line Chart',
+  id: 'hcc.linechart',
   // thumbnail,
   // icon,
-  categories: ['Test', 'Debugging'],
+  categories: ['time series', 'correlations'],
   description: 'A custom line chart implementation',
-  // code: 'https://github.com/rawgraphs',
+  // code: 'https://github.com/rawgraphs/rawgraphs-charts',
   // tutorial: 'https://rawgraphs.io/learning/',
 }

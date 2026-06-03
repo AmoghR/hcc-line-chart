@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../rawgraphs-charts/src/linechart"
+		}
+	],
+	"settings": {}
+}

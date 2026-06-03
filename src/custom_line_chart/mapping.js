@@ -1,23 +1,48 @@
-// export const mapData = function (data, mapping, dataTypes, dimensions) {
-  
-//   // you can use information in mapping to tranform input data in the
-//   // most suitable format required by the render function.
+import * as d3 from 'd3'
+import { getDimensionAggregator } from '@rawgraphs/rawgraphs-core'
 
-//   // you can use a declarative approach for simple transformation (e.g. just changing
-//   // the name of a column).
-//   // mopre info: https://rawgraphs.github.io/rawgraphs-core/docs/declarative-mapping
+export const mapData = function (data, mapping, dataTypes, dimensions) {
 
-//   //return data.map((d) => ({
-//     //name: d[mapping['dimensionName'].value],
-//   //}))
+  const colorAggregator = getDimensionAggregator(
+    'color',
+    mapping,
+    dataTypes,
+    dimensions
+  )
+  const yAggregator = getDimensionAggregator(
+    'y',
+    mapping,
+    dataTypes,
+    dimensions
+  )
 
-//     return data.map((d) => ({
-//     x: d[mapping.x.value],
-//     y: d[mapping.y.value],
-//   }))
-// }
-export const mapData = {
-  x: 'get',
-  y: 'get',
+  // add the non-compulsory dimensions.
+  'color' in mapping ? null : (mapping.color = { value: undefined })
+  // 'series' in mapping ? null : (mapping.series = { value: undefined })
+  'lines' in mapping ? null : (mapping.lines = { value: undefined })
+
+  let results = []
+
+  const result = d3.rollups(
+    data,
+    (v) =>
+      d3.rollups(
+        v,
+        (vv) => {
+          const item = {
+            x: vv[0][mapping.x.value], //get the first one since it's grouped
+            y: yAggregator(vv.map((d) => d[mapping.y.value])), // aggregate
+            color: colorAggregator(v.map((d) => d[mapping.color.value])), // aggregate
+            // series: vv[0][mapping.series.value], //get the first one since it's grouped
+            lines: vv[0][mapping.lines.value], //get the first one since it's grouped
+          }
+          results.push(item)
+        },
+        (d) => d[mapping.x.value] !== undefined && d[mapping.x.value] !== null ? d[mapping.x.value].toString() : '' // sub-group functions
+      ),
+    // (d) => d[mapping.series.value], // series grouping
+    (d) => d[mapping.lines.value] // group functions
+  )
+
+  return results
 }
-
