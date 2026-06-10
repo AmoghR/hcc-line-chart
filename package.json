@@ -11,7 +11,7 @@
     "format": "prettier --write src",
     "sandbox": "webpack-dev-server",
     "prebuild": "rimraf lib",
-    "build": "rollup -c"
+    "build": "rollup -c && gulp rename-umd"
   },
   "author": "",
   "license": "Apache-2.0",
@@ -38,6 +38,8 @@
     "css-loader": "^6.5.1",
     "dsv-loader": "^2.0.0",
     "file-loader": "^6.1.0",
+    "gulp": "^5.0.1",
+    "gulp-rename": "^2.1.0",
     "prettier": "^2.1.2",
     "raw-loader": "^4.0.2",
     "react": "^16.13.1",

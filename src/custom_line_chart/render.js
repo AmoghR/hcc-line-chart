@@ -1,5 +1,6 @@
 import * as d3 from 'd3'
 import rough from 'roughjs'
+import { legend } from '@rawgraphs/rawgraphs-core'
 import '../d3-styles.js'
 
 export function render(
@@ -7,14 +8,13 @@ export function render(
   data,
   visualOptions,
   mapping,
-  originalData,
   styles
 ) {
   const {
     width,
     height,
     background,
-    dotsRadius,
+    markerSize,
     showSketchy,
     showXAxis,
     showYAxis,
@@ -22,25 +22,44 @@ export function render(
     showYAxisLine,
     showXTicks,
     showYTicks,
-    showLabels,
+    showXLabels,
+    showYLabels,
     roughness,
     titleText,
     titlePosition,
     chartType,
+    markerShape,
     yAxisStart,
     yAxisEnd,
     yAxisStep,
-    padYScale,
+    // padYScale,
+    marginTop,
+    marginBottom,
+    marginLeft,
+    marginRight,
+    paddingTop,
+    paddingBottom,
+    paddingLeft,
+    paddingRight,
     gridX,
     gridY,
-    gridColor,
-    gridOpacity
+    gridColorX,
+    gridColorY,
+    gridTypeX,
+    gridTypeY,
+    gridOpacity,
   } = visualOptions
 
   const svg = d3.select(node)
 
   // Responsive SVG setup
   svg.attr('viewBox', `0 0 ${width} ${height}`)
+
+  // Add background
+  svg.append('rect')
+    .attr('width', width)
+    .attr('height', height)
+    .attr('fill', background || '#ffffff')
 
   if (data.length === 0) return
 
@@ -52,7 +71,6 @@ export function render(
     (d) => d.lines
   )
 
-  // Layout series in a grid (similar to d3-gridding but without external dependency)
   const columnsNumber = mapping.series && mapping.series.value ? 2 : 1
   const cellWidth = width / columnsNumber
   const rowsNumber = Math.ceil(nestedData.length / columnsNumber)
@@ -78,7 +96,8 @@ export function render(
 
   // Render each series cell
   griddingData.forEach((cell, cellIndex) => {
-    const margin = { top: 60, right: 50, bottom: 50, left: 60 }
+    const margin = { top: marginTop, right: marginRight, bottom: marginBottom, left: marginLeft }
+    const padding = { top: paddingTop, right: paddingRight, bottom: paddingBottom, left: paddingLeft }
     const serieWidth = cell.width - margin.left - margin.right
     const serieHeight = cell.height - margin.top - margin.bottom
 
@@ -102,30 +121,29 @@ export function render(
     if (xScaleType === 'date') {
       xScale = d3.scaleTime()
         .domain(d3.extent(seriesData, d => d.x))
-        .range([0, serieWidth])
+        .range([padding.left, serieWidth - padding.right])
     } else if (xScaleType === 'number') {
       xScale = d3.scaleLinear()
         .domain(d3.extent(seriesData, d => d.x))
-        .range([0, serieWidth])
+        .range([padding.left, serieWidth - padding.right])
     } else {
       const uniqueX = Array.from(new Set(seriesData.map(d => d.x)))
       xScale = d3.scalePoint()
         .domain(uniqueX)
-        .range([0, serieWidth])
+        .range([padding.left, serieWidth - padding.right])
         .padding(0.5)
     }
 
     // Y scale
     let [yMinVal, yMaxVal] = d3.extent(seriesData, d => d.y)
-    if (padYScale) {
-      const diff = yMaxVal - yMinVal
-      if (diff === 0) {
-        yMinVal = yMinVal - 1
-        yMaxVal = yMaxVal + 1
-      } else {
-        yMinVal = yMinVal - 0.1 * diff
-        yMaxVal = yMaxVal + 0.1 * diff
-      }
+
+    const diff = yMaxVal - yMinVal
+    if (diff === 0) {
+      yMinVal = yMinVal - 1
+      yMaxVal = yMaxVal + 1
+    } else {
+      yMinVal = yMinVal - 0.1 * diff
+      yMaxVal = yMaxVal + 0.1 * diff
     }
 
     if (yAxisStart !== undefined && yAxisStart !== null && !isNaN(yAxisStart)) {
@@ -137,7 +155,7 @@ export function render(
 
     const yScale = d3.scaleLinear()
       .domain([yMinVal, yMaxVal])
-      .range([serieHeight, 0])
+      .range([serieHeight - padding.bottom, padding.top])
 
     let yTickValues
     if (yAxisStep && yAxisStep > 0) {
@@ -145,6 +163,12 @@ export function render(
       for (let val = yMinVal; val <= yMaxVal; val += yAxisStep) {
         yTickValues.push(val)
       }
+    }
+
+    const getDashArray = (type) => {
+      if (type === 'dashed') return '4,4'
+      if (type === 'dotted') return '2,2'
+      return 'none'
     }
 
     // Grid lines
@@ -158,7 +182,11 @@ export function render(
             .tickFormat('')
         )
         .call(g => g.select('.domain').remove())
-        .call(g => g.selectAll('.tick line').attr('stroke', gridColor).attr('stroke-opacity', gridOpacity))
+        .call(g => g.selectAll('.tick line')
+          .attr('stroke', gridColorX)
+          .attr('stroke-opacity', gridOpacity)
+          .attr('stroke-dasharray', getDashArray(gridTypeX))
+        )
     }
 
     if (gridY) {
@@ -172,7 +200,11 @@ export function render(
         .append('g')
         .call(yGridAxis)
         .call(g => g.select('.domain').remove())
-        .call(g => g.selectAll('.tick line').attr('stroke', gridColor).attr('stroke-opacity', gridOpacity))
+        .call(g => g.selectAll('.tick line')
+          .attr('stroke', gridColorY)
+          .attr('stroke-opacity', gridOpacity)
+          .attr('stroke-dasharray', getDashArray(gridTypeY))
+        )
     }
 
     // Lines generator
@@ -212,25 +244,46 @@ export function render(
         }
       }
 
+      const symbolGenerator = d3.symbol().size(Math.PI * markerSize * markerSize)
+      if (markerShape === 'square') symbolGenerator.type(d3.symbolSquare)
+      else if (markerShape === 'triangle') symbolGenerator.type(d3.symbolTriangle)
+      else if (markerShape === 'diamond') symbolGenerator.type(d3.symbolDiamond)
+      else if (markerShape === 'star') symbolGenerator.type(d3.symbolStar)
+      else symbolGenerator.type(d3.symbolCircle)
+
       linePoints.forEach((d) => {
         const cx = xScale(d.x)
         const cy = yScale(d.y)
+        const dShape = symbolGenerator()
 
         if (showSketchy) {
-          const sketchyCircleNode = rc.circle(cx, cy, dotsRadius * 2, {
-            stroke: groupColor,
-            strokeWidth: 1.5,
-            roughness: roughness,
-            fill: groupColor,
-            fillStyle: 'solid',
-          })
-          selection.node().appendChild(sketchyCircleNode)
+          if (markerShape === 'circle') {
+            const sketchyCircleNode = rc.circle(cx, cy, markerSize * 2, {
+              stroke: groupColor,
+              strokeWidth: 1.5,
+              roughness: roughness,
+              fill: groupColor,
+              fillStyle: 'solid',
+            })
+            selection.node().appendChild(sketchyCircleNode)
+          } else {
+            const sketchyPathNode = rc.path(dShape, {
+              stroke: groupColor,
+              strokeWidth: 1.5,
+              roughness: roughness,
+              fill: groupColor,
+              fillStyle: 'solid',
+            })
+            const g = document.createElementNS("http://www.w3.org/2000/svg", "g")
+            g.setAttribute("transform", `translate(${cx}, ${cy})`)
+            g.appendChild(sketchyPathNode)
+            selection.node().appendChild(g)
+          }
         } else {
           selection
-            .append('circle')
-            .attr('cx', cx)
-            .attr('cy', cy)
-            .attr('r', dotsRadius)
+            .append('path')
+            .attr('d', dShape)
+            .attr('transform', `translate(${cx}, ${cy})`)
             .attr('fill', groupColor)
         }
       })
@@ -250,7 +303,7 @@ export function render(
 
       if (!showXAxisLine) xAxisG.select('.domain').remove()
       if (!showXTicks) xAxisG.selectAll('.tick line').remove()
-      if (!showLabels) xAxisG.selectAll('.tick text').remove()
+      if (!showXLabels) xAxisG.selectAll('.tick text').remove()
     }
 
     if (showYAxis) {
@@ -265,7 +318,7 @@ export function render(
 
       if (!showYAxisLine) yAxisG.select('.domain').remove()
       if (!showYTicks) yAxisG.selectAll('.tick line').remove()
-      if (!showLabels) yAxisG.selectAll('.tick text').remove()
+      if (!showYLabels) yAxisG.selectAll('.tick text').remove()
     }
 
     // Series title if multiple series exist
@@ -299,4 +352,5 @@ export function render(
       .text(titleText)
       .styles(styles.seriesLabel)
   }
+
 }

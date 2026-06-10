@@ -34,11 +34,4 @@ export const dimensions = [
       date: 'csvDistinct',
     },
   },
-
-  // {
-  //   id: 'series',
-  //   name: 'Series',
-  //   validTypes: ['number', 'string', 'date'],
-  //   required: false,
-  // },
 ]

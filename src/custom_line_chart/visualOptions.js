@@ -1,37 +1,125 @@
 export const visualOptions = {
+  width: {
+    type: 'number',
+    label: 'Width',
+    default: 600,
+    group: 'artboard',
+  },
+
+  height: {
+    type: 'number',
+    label: 'Height',
+    default: 400,
+    group: 'artboard',
+  },
+
+  // padYScale: {
+  //   type: 'boolean',
+  //   label: 'Upper & lower padding',
+  //   default: true,
+  //   group: 'artboard',
+  // },
+
+  marginTop: {
+    type: 'number',
+    label: 'Margin Top',
+    default: 60,
+    group: 'artboard'
+  },
+
+  marginBottom: {
+    type: 'number',
+    label: 'Margin Bottom',
+    default: 50,
+    group: 'artboard'
+  },
+
+  marginLeft: {
+    type: 'number',
+    label: 'Margin Left',
+    default: 60,
+    group: 'artboard'
+  },
+
+  marginRight: {
+    type: 'number',
+    label: 'Margin Right',
+    default: 50,
+    group: 'artboard'
+  },
+
+  paddingTop: {
+    type: 'number',
+    label: 'Padding Top',
+    default: 0,
+    group: 'artboard'
+  },
+
+  paddingBottom: {
+    type: 'number',
+    label: 'Padding Bottom',
+    default: 0,
+    group: 'artboard'
+  },
+
+  paddingLeft: {
+    type: 'number',
+    label: 'Padding Left',
+    default: 0,
+    group: 'artboard'
+  },
+
+  paddingRight: {
+    type: 'number',
+    label: 'Padding Right',
+    default: 0,
+    group: 'artboard'
+  },
+
+
+  /* Chart section */
   titleText: {
     type: 'text',
-    label: 'Title Text',
-    default: 'Vienna Population',
+    label: 'Chart Title',
+    default: 'User Title',
     group: 'chart',
   },
 
   titlePosition: {
     type: 'text',
     label: 'Title Position',
-    options: ['left', 'center', 'right'],
-    default: 'left',
+    options: ['center', 'left', 'right'],
+    default: 'center',
     group: 'chart',
   },
 
   chartType: {
     type: 'text',
-    label: 'Chart Variation',
+    label: 'Chart Type',
     options: ['line', 'step', 'bump'],
     default: 'line',
     group: 'chart',
   },
 
-  dotsRadius: {
+  markerShape: {
+    type: 'text',
+    label: 'Marker Shape',
+    options: ['circle', 'square', 'triangle', 'diamond', 'star'],
+    default: 'circle',
+    group: 'chart',
+  },
+
+  markerSize: {
     type: 'number',
-    label: 'Dots radius',
+    label: 'Marker Size',
     default: 0,
     group: 'chart',
   },
 
+  /* Artistic section */
   showSketchy: {
     type: 'boolean',
-    label: 'Hand-drawn style',
+    label: 'Hand-Drawn Style',
     default: false,
     group: 'artistic',
   },
@@ -46,16 +134,17 @@ export const visualOptions = {
     },
   },
 
+  /* Axes section */
   showXAxis: {
     type: 'boolean',
-    label: 'Show X Axis',
+    label: 'Show X-Axis',
     default: true,
     group: 'axes',
   },
 
   showXAxisLine: {
     type: 'boolean',
-    label: 'Show Base X Axis Line',
+    label: 'Show X-Axis Line',
     default: true,
     group: 'axes',
     disabled: {
@@ -65,7 +154,17 @@ export const visualOptions = {
 
   showXTicks: {
     type: 'boolean',
-    label: 'Show X Tick Marks',
+    label: 'Show X-Axis Ticks',
+    default: true,
+    group: 'axes',
+    disabled: {
+      showXAxis: false,
+    },
+  },
+
+  showXLabels: {
+    type: 'boolean',
+    label: 'Show X-Axis Labels',
     default: true,
     group: 'axes',
     disabled: {
@@ -75,14 +174,14 @@ export const visualOptions = {
 
   showYAxis: {
     type: 'boolean',
-    label: 'Show Y Axis',
+    label: 'Show Y-Axis',
     default: true,
     group: 'axes',
   },
 
   showYAxisLine: {
     type: 'boolean',
-    label: 'Show Base Y Axis Line',
+    label: 'Show Y-Axis Line',
     default: false,
     group: 'axes',
     disabled: {
@@ -92,7 +191,7 @@ export const visualOptions = {
 
   showYTicks: {
     type: 'boolean',
-    label: 'Show Y Tick Marks',
+    label: 'Show Y-Axis Ticks',
     default: false,
     group: 'axes',
     disabled: {
@@ -100,16 +199,19 @@ export const visualOptions = {
     },
   },
 
-  showLabels: {
+  showYLabels: {
     type: 'boolean',
-    label: 'Show Axis Labels',
+    label: 'Show Y-Axis Labels',
     default: true,
     group: 'axes',
+    disabled: {
+      showYAxis: false,
+    },
   },
 
   yAxisStart: {
     type: 'number',
-    label: 'Y Axis Start',
+    label: 'Y-Axis Start',
     group: 'axes',
     disabled: {
       showYAxis: false,
@@ -118,7 +220,7 @@ export const visualOptions = {
 
   yAxisEnd: {
     type: 'number',
-    label: 'Y Axis End',
+    label: 'Y-Axis End',
     group: 'axes',
     disabled: {
       showYAxis: false,
@@ -127,44 +229,75 @@ export const visualOptions = {
 
   yAxisStep: {
     type: 'number',
-    label: 'Y Axis Step',
+    label: 'Y-Axis Step',
     group: 'axes',
     disabled: {
       showYAxis: false,
     },
   },
 
-  padYScale: {
-    type: 'boolean',
-    label: 'Upper & lower padding',
-    default: true,
-    group: 'axes',
-  },
+
+  /* Grid section */
 
   gridX: {
     type: 'boolean',
-    label: 'Show X Grid',
+    label: 'Show X-Axis Grid',
     default: false,
     group: 'grid',
   },
 
   gridY: {
     type: 'boolean',
-    label: 'Show Y Grid',
+    label: 'Show Y-Axis Grid',
     default: true,
     group: 'grid',
   },
 
-  gridColor: {
+  gridColorX: {
     type: 'color',
-    label: 'Grid line color',
+    label: 'X-Axis Grid line colour',
     default: '#e0e0e0',
     group: 'grid',
+    disabled: {
+      gridX: false,
+    },
+  },
+
+  gridTypeX: {
+    type: 'text',
+    label: 'X-Axis Grid line type',
+    options: ['solid', 'dashed', 'dotted'],
+    default: 'solid',
+    group: 'grid',
+    disabled: {
+      gridX: false,
+    },
+  },
+
+  gridColorY: {
+    type: 'color',
+    label: 'Y-Axis Grid line colour',
+    default: '#e0e0e0',
+    group: 'grid',
+    disabled: {
+      gridY: false,
+    },
+  },
+
+  gridTypeY: {
+    type: 'text',
+    label: 'Y-Axis Grid line type',
+    options: ['solid', 'dashed', 'dotted'],
+    default: 'solid',
+    group: 'grid',
+    disabled: {
+      gridY: false,
+    },
   },
 
   gridOpacity: {
     type: 'number',
-    label: 'Grid line opacity',
+    label: 'Grid Line Opacity',
     default: 0.6,
     group: 'grid',
   },
