@@ -6,7 +6,7 @@ This Cutom Line Chart gives options to change different components of the Line c
 
 To create a custom chart you'll need [node.js](https://nodejs.org/en) installed on your computer.
 
-In terminal navigate the folder in wich you cloned this template and run:
+In terminal navigate the folder in which you cloned this template and run:
 
 ```sh
 npm install
@@ -34,6 +34,6 @@ In terminal navigate the folder in wich you cloned this template and run:
 npm run build
 ```
 
-This will generate a folder named `lib` in which you will find three files.
+This will generate a folder named `lib` in which you will find four files.
 
-The one named `index.umd.js` is the bundle that can be loaded by RAWGraphs. You can rename it as you prefer.
+The one named `hcc_line_chart.umd.js` is the bundle that can be loaded by RAWGraphs. You can rename it as you prefer.
