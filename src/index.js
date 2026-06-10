@@ -1,1 +1,1 @@
-export { default as custom_line_chart } from './custom_line_chart'
+export { default as hcc_line_chart } from './hcc_line_chart'
