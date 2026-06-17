@@ -1,0 +1,24 @@
+<svg id="rawgraphs-icons" xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #95e5c0;
+      }
+
+      .cls-2 {
+        fill: #06c26c;
+      }
+      
+      .text-style {
+        font-family: 'Arial', 'Helvetica', sans-serif;
+        font-weight: 900;
+        font-size: 20px;
+        letter-spacing: -0.5px;
+      }
+    </style>
+  </defs>
+  
+  <g id="primary">
+    <text x="28" y="35" class="cls-2 text-style" text-anchor="middle">HCC</text>
+  </g>
+</svg>
