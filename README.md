@@ -9,6 +9,7 @@ This repository contains a custom line chart implementation (`hcc-line-chart`) b
 *   **`hcc-line-chart/`**: The core package containing the chart logic.
     *   `src/hcc_line_chart/`: Contains the definition (`metadata.js`, `visualOptions.js`, `mapping.js`, `dimensions.js`) and the D3 execution logic (`render.js`).
     *   `bundler/`: Bundler configurations to build the standalone code.
+*   **`rawgraphs-charts/`**: A local version of charts loaded by RAWGraphs core app.
 *   **`rawgraphs-app/`**: A local environment of the RAWGraphs core app used to validate, load, and test your custom chart alongside standard configurations.
 
 ---
