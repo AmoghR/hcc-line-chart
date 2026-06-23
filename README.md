@@ -43,7 +43,7 @@ To compile your custom chart into a single bundle that RAWGraphs can read, run t
 cd hcc-line-chart
 yarn build
 ```
-This generates the distribution bundle in folder named `lib` where you will find four files.The one named `hcc_line_chart.js` is the bundle that can be loaded by RAWGraphs. You can rename it as you prefer.
+This generates the distribution bundle in folder named `lib` where you will find four files.The one named `hcc-line-chart.js` is the bundle that can be loaded by RAWGraphs. You can rename it as you prefer.
 
 **OR**
 
