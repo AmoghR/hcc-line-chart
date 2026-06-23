@@ -17,7 +17,7 @@ This repository contains a custom line chart implementation (`hcc-line-chart`) b
 ## 🛠️ Getting Started
 
 ### 1. Prerequisites
-Make sure you have Node.js and `yarn` installed on your machine.
+Make sure you have `Node.js` and `yarn` installed on your machine.
 
 ### 2. Installation
 Install the dependencies for all the packages:
