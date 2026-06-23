@@ -101,25 +101,46 @@ export const visualOptions = {
     group: 'chart',
   },
 
+  showMarker: {
+    type: 'boolean',
+    label: 'Show Marker',
+    default: false,
+    group: 'chart',
+  },
+
   markerShape: {
     type: 'text',
     label: 'Marker Shape',
     options: ['circle', 'square', 'triangle', 'diamond', 'star'],
     default: 'circle',
     group: 'chart',
+    disabled: {
+      showMarker: false,
+    },
   },
 
   markerSize: {
     type: 'number',
     label: 'Marker Size',
-    default: 0,
+    default: 2,
     group: 'chart',
+    disabled: {
+      showMarker: false,
+    },
   },
 
   graphLineWidth: {
     type: 'number',
     label: 'Line Width',
     default: 2,
+    group: 'chart',
+  },
+
+  lineStyle: {
+    type: 'text',
+    label: 'Line Style',
+    options: ['solid', 'dashed', 'dotted'],
+    default: 'solid',
     group: 'chart',
   },
 

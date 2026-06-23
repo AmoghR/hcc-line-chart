@@ -28,6 +28,7 @@ export function render(
     titleText,
     titlePosition,
     chartType,
+    showMarker,
     markerShape,
     yAxisStart,
     yAxisEnd,
@@ -49,6 +50,7 @@ export function render(
     gridTypeY,
     gridLineWidth,
     graphLineWidth,
+    lineStyle,
     xAxisTitleText,
     xAxisTitlePosition,
     yAxisTitleText,
@@ -137,6 +139,27 @@ export function render(
 
     const seriesData = cell.data[1].flatMap(line => line[1])
 
+    if (chartType === 'bump') {
+      // Group points by x-coordinate to determine ranks at each x
+      const groupedByX = d3.group(seriesData, d => {
+        return d.x instanceof Date ? d.x.getTime() : d.x
+      })
+      
+      groupedByX.forEach(pointsAtX => {
+        // Sort descending by y so the highest value gets rank 1
+        pointsAtX.sort((a, b) => d3.descending(a.y, b.y))
+        pointsAtX.forEach((d, i) => {
+          d.rank = i + 1
+        })
+      })
+      
+      // Update y to be the rank so the rest of the chart renders ranks
+      seriesData.forEach(d => {
+        d.originalY = d.y
+        d.y = d.rank
+      })
+    }
+
     // Detect X scale type
     const firstX = seriesData[0]?.x
     let xScaleType = 'number'
@@ -171,8 +194,13 @@ export function render(
       yMinVal = yMinVal - 1
       yMaxVal = yMaxVal + 1
     } else {
-      yMinVal = yMinVal - 0.1 * diff
-      yMaxVal = yMaxVal + 0.1 * diff
+      if (chartType === 'bump') {
+        yMinVal = yMinVal - 0.5
+        yMaxVal = yMaxVal + 0.5
+      } else {
+        yMinVal = yMinVal - 0.1 * diff
+        yMaxVal = yMaxVal + 0.1 * diff
+      }
     }
 
     if (yAxisStart !== undefined && yAxisStart !== null && !isNaN(yAxisStart)) {
@@ -182,12 +210,22 @@ export function render(
       yMaxVal = yAxisEnd
     }
 
+    let yRange = [serieHeight - padding.bottom, padding.top]
+    if (chartType === 'bump') {
+      yRange = [padding.top, serieHeight - padding.bottom] // Rank 1 at the top
+    }
+
     const yScale = d3.scaleLinear()
       .domain([yMinVal, yMaxVal])
-      .range([serieHeight - padding.bottom, padding.top])
+      .range(yRange)
 
     let yTickValues
-    if (yAxisStep && yAxisStep > 0) {
+    if (chartType === 'bump') {
+      yTickValues = []
+      for (let val = Math.ceil(yMinVal); val <= Math.floor(yMaxVal); val++) {
+        yTickValues.push(val)
+      }
+    } else if (yAxisStep && yAxisStep > 0) {
       yTickValues = []
       for (let val = yMinVal; val <= yMaxVal; val += yAxisStep) {
         yTickValues.push(val)
@@ -241,8 +279,6 @@ export function render(
     let curveInterpolator = d3.curveLinear
     if (chartType === 'step') {
       curveInterpolator = d3.curveStep
-    } else if (chartType === 'bump') {
-      curveInterpolator = d3.curveBumpX
     }
 
     const lineGenerator = d3
@@ -258,11 +294,16 @@ export function render(
 
       if (linePoints.length > 1 && pathString) {
         if (showSketchy) {
-          const sketchyLineNode = rc.path(pathString, {
+          const dashArray = getDashArray(lineStyle);
+          const sketchyOptions = {
             stroke: groupColor,
             strokeWidth: graphLineWidth,
             roughness: roughness,
-          })
+          };
+          if (dashArray !== 'none') {
+            sketchyOptions.strokeLineDash = dashArray.split(',').map(Number);
+          }
+          const sketchyLineNode = rc.path(pathString, sketchyOptions)
           selection.node().appendChild(sketchyLineNode)
         } else {
           selection
@@ -270,53 +311,56 @@ export function render(
             .attr('fill', 'none')
             .attr('stroke', groupColor)
             .attr('stroke-width', graphLineWidth)
+            .attr('stroke-dasharray', getDashArray(lineStyle))
             .attr('d', pathString)
         }
       }
 
-      const symbolGenerator = d3.symbol().size(Math.PI * markerSize * markerSize)
-      if (markerShape === 'square') symbolGenerator.type(d3.symbolSquare)
-      else if (markerShape === 'triangle') symbolGenerator.type(d3.symbolTriangle)
-      else if (markerShape === 'diamond') symbolGenerator.type(d3.symbolDiamond)
-      else if (markerShape === 'star') symbolGenerator.type(d3.symbolStar)
-      else symbolGenerator.type(d3.symbolCircle)
+      if (showMarker && markerSize > 0) {
+        const symbolGenerator = d3.symbol().size(Math.PI * markerSize * markerSize)
+        if (markerShape === 'square') symbolGenerator.type(d3.symbolSquare)
+        else if (markerShape === 'triangle') symbolGenerator.type(d3.symbolTriangle)
+        else if (markerShape === 'diamond') symbolGenerator.type(d3.symbolDiamond)
+        else if (markerShape === 'star') symbolGenerator.type(d3.symbolStar)
+        else symbolGenerator.type(d3.symbolCircle)
 
-      linePoints.forEach((d) => {
-        const cx = xScale(d.x)
-        const cy = yScale(d.y)
-        const dShape = symbolGenerator()
+        linePoints.forEach((d) => {
+          const cx = xScale(d.x)
+          const cy = yScale(d.y)
+          const dShape = symbolGenerator()
 
-        if (showSketchy) {
-          if (markerShape === 'circle') {
-            const sketchyCircleNode = rc.circle(cx, cy, markerSize * 2, {
-              stroke: groupColor,
-              strokeWidth: 1.5,
-              roughness: roughness,
-              fill: groupColor,
-              fillStyle: 'solid',
-            })
-            selection.node().appendChild(sketchyCircleNode)
+          if (showSketchy) {
+            if (markerShape === 'circle') {
+              const sketchyCircleNode = rc.circle(cx, cy, markerSize * 2, {
+                stroke: groupColor,
+                strokeWidth: 1.5,
+                roughness: roughness,
+                fill: groupColor,
+                fillStyle: 'solid',
+              })
+              selection.node().appendChild(sketchyCircleNode)
+            } else {
+              const sketchyPathNode = rc.path(dShape, {
+                stroke: groupColor,
+                strokeWidth: 1.5,
+                roughness: roughness,
+                fill: groupColor,
+                fillStyle: 'solid',
+              })
+              const g = document.createElementNS("http://www.w3.org/2000/svg", "g")
+              g.setAttribute("transform", `translate(${cx}, ${cy})`)
+              g.appendChild(sketchyPathNode)
+              selection.node().appendChild(g)
+            }
           } else {
-            const sketchyPathNode = rc.path(dShape, {
-              stroke: groupColor,
-              strokeWidth: 1.5,
-              roughness: roughness,
-              fill: groupColor,
-              fillStyle: 'solid',
-            })
-            const g = document.createElementNS("http://www.w3.org/2000/svg", "g")
-            g.setAttribute("transform", `translate(${cx}, ${cy})`)
-            g.appendChild(sketchyPathNode)
-            selection.node().appendChild(g)
+            selection
+              .append('path')
+              .attr('d', dShape)
+              .attr('transform', `translate(${cx}, ${cy})`)
+              .attr('fill', groupColor)
           }
-        } else {
-          selection
-            .append('path')
-            .attr('d', dShape)
-            .attr('transform', `translate(${cx}, ${cy})`)
-            .attr('fill', groupColor)
-        }
-      })
+        })
+      }
     })
 
     // Axes
