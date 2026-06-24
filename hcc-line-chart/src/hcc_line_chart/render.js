@@ -278,7 +278,7 @@ export function render(
     // Lines generator
     let curveInterpolator = d3.curveLinear
     if (chartType === 'step') {
-      curveInterpolator = d3.curveStep
+      curveInterpolator = d3.curveStepAfter
     }
 
     const lineGenerator = d3
