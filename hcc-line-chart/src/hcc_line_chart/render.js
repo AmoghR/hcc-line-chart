@@ -137,27 +137,34 @@ export function render(
       .attr('id', `series-${cellIndex}`)
       .attr('transform', `translate(${cell.x + margin.left}, ${cell.y + margin.top})`)
 
-    const seriesData = cell.data[1].flatMap(line => line[1])
+    let linesData = cell.data[1];
+    let seriesData = linesData.flatMap(line => line[1]);
 
     if (chartType === 'bump') {
-      // Group points by x-coordinate to determine ranks at each x
-      const groupedByX = d3.group(seriesData, d => {
-        return d.x instanceof Date ? d.x.getTime() : d.x
-      })
+      // 1. Create a shallow copy of the points so we don't mutate the original array items
+      linesData = linesData.map(([lineKey, linePoints]) => [
+        lineKey,
+        linePoints.map(d => ({ ...d, originalY: d.y }))
+      ]);
+
+      const preparedData = linesData.flatMap(line => line[1]);
+
+      // 2. Group the cloned points by x-coordinate
+      const groupedByX = d3.group(preparedData, d => {
+        return d.x instanceof Date ? d.x.getTime() : d.x;
+      });
       
+      // 3. Calculate ranks safely
       groupedByX.forEach(pointsAtX => {
-        // Sort descending by y so the highest value gets rank 1
-        pointsAtX.sort((a, b) => d3.descending(a.y, b.y))
+        pointsAtX.sort((a, b) => d3.descending(a.originalY, b.originalY));
         pointsAtX.forEach((d, i) => {
-          d.rank = i + 1
-        })
-      })
-      
-      // Update y to be the rank so the rest of the chart renders ranks
-      seriesData.forEach(d => {
-        d.originalY = d.y
-        d.y = d.rank
-      })
+          d.rank = i + 1;
+          d.y = d.rank; // Set the new y to the rank
+        });
+      });
+
+      // 4. Assign the safely transformed data back to your rendering variables
+      seriesData = preparedData;
     }
 
     // Detect X scale type
@@ -288,7 +295,7 @@ export function render(
       .curve(curveInterpolator)
 
     // Render lines/dots
-    cell.data[1].forEach(([lineKey, linePoints]) => {
+    linesData.forEach(([lineKey, linePoints]) => {
       const groupColor = colorScale(linePoints[0]?.color)
       const pathString = lineGenerator(linePoints)
 
@@ -380,7 +387,7 @@ export function render(
       if (!showXLabels) xAxisG.selectAll('.tick text').remove()
 
       if (xAxisTitleText) {
-        if (xAxisTitlePosition === 'below') {
+        if (xAxisTitlePosition === 'horizontal centered') {
           xAxisG
             .append('text')
             .attr('x', serieWidth / 2)

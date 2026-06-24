@@ -193,8 +193,8 @@ export const visualOptions = {
   xAxisTitlePosition: {
     type: 'text',
     label: 'X-Axis Title Position',
-    options: ['end', 'below'],
-    default: 'end',
+    options: ['inline in chart', 'horizontal centered'],
+    default: 'inline in chart',
     group: 'axes',
     disabled: {
       showXAxis: false,
